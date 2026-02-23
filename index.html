@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Macro Intelligence Terminal</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080c10;
+  --bg2: #0c1118;
+  --bg3: #101820;
+  --bg4: #162030;
+  --surface: #0f1824;
+  --surface2: #1a2840;
+  --border: #1e2d42;
+  --border2: #253550;
+  --text: #dce8f5;
+  --text2: #7a9bb8;
+  --text3: #3a5570;
+  --accent: #3b82f6;
+  --accent-dim: #1d4ed855;
+  --green: #10b981;
+  --green-dim: #065f4633;
+  --red: #ef4444;
+  --red-dim: #7f1d1d33;
+  --amber: #f59e0b;
+  --amber-dim: #78350f33;
+  --cyan: #22d3ee;
+  --purple: #a78bfa;
+  --usa: #3b82f6;
+  --eu: #10b981;
+  --cn: #f59e0b;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--mono);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ── HEADER ── */
+.hdr {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 300;
+}
+.hdr-brand { display: flex; align-items: center; gap: 14px; }
+.hdr-logo { font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; }
+.hdr-sep { width: 1px; height: 18px; background: var(--border2); }
+.hdr-title { font-size: 10px; color: var(--text2); letter-spacing: 1.5px; text-transform: uppercase; }
+.hdr-right { display: flex; align-items: center; gap: 14px; }
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; display: inline-block; margin-right: 5px; }
+.live-dot.loading { background: var(--amber); animation: pulse 0.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+.hdr-status { font-size: 9px; color: var(--text3); letter-spacing: 0.8px; text-transform: uppercase; }
+.hdr-time { font-size: 9px; color: var(--text3); }
+.btn-ref {
+  background: var(--bg4); border: 1px solid var(--border2); color: var(--accent);
+  font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 5px 14px; cursor: pointer; transition: all 0.15s;
+}
+.btn-ref:hover { background: var(--surface2); border-color: var(--accent); }
+.btn-ref:disabled { color: var(--text3); border-color: var(--border); cursor: not-allowed; }
+
+/* ── GEO NAV (sticky under header) ── */
+.geo-nav {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  position: sticky;
+  top: 50px;
+  z-index: 200;
+}
+.geo-btn {
+  background: none; border: none; border-bottom: 3px solid transparent;
+  color: var(--text3); font-family: var(--mono); font-size: 10px;
+  letter-spacing: 1.5px; text-transform: uppercase; padding: 11px 20px;
+  cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 7px;
+}
+.geo-btn:hover { color: var(--text2); }
+.geo-btn.usa.active { color: var(--usa); border-bottom-color: var(--usa); }
+.geo-btn.eu.active  { color: var(--eu);  border-bottom-color: var(--eu);  }
+.geo-btn.cn.active  { color: var(--cn);  border-bottom-color: var(--cn);  }
+.geo-flag { font-size: 14px; }
+.geo-divider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+.geo-scroll-btn {
+  margin-left: auto; background: none; border: 1px solid var(--border2);
+  color: var(--text3); font-family: var(--mono); font-size: 9px;
+  letter-spacing: 1px; text-transform: uppercase; padding: 4px 10px;
+  cursor: pointer; transition: all 0.15s;
+}
+.geo-scroll-btn:hover { color: var(--text2); border-color: var(--border2); }
+
+/* ── PAGE ── */
+.page { padding: 0; max-width: 1700px; }
+
+/* ── GEO SECTION ── */
+.geo-section { padding: 28px 24px; border-bottom: 1px solid var(--border); }
+
+.geo-header {
+  display: flex; align-items: center; gap: 16px; margin-bottom: 24px;
+}
+.geo-accent-bar { width: 4px; height: 40px; border-radius: 2px; flex-shrink: 0; }
+.geo-accent-bar.usa { background: var(--usa); box-shadow: 0 0 12px var(--usa); }
+.geo-accent-bar.eu  { background: var(--eu);  box-shadow: 0 0 12px var(--eu); }
+.geo-accent-bar.cn  { background: var(--cn);  box-shadow: 0 0 12px var(--cn); }
+.geo-info {}
+.geo-name { font-size: 18px; font-weight: 600; letter-spacing: -0.5px; color: var(--text); }
+.geo-sub { font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+
+/* ── BUCKET HEADER ── */
+.bucket-head {
+  display: flex; align-items: center; gap: 10px;
+  margin: 28px 0 14px;
+}
+.bucket-head:first-of-type { margin-top: 0; }
+.bucket-label {
+  font-size: 8px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text3);
+  white-space: nowrap;
+}
+.bucket-line { flex: 1; height: 1px; background: var(--border); }
+.bucket-count {
+  font-size: 8px; color: var(--text3); letter-spacing: 0.5px;
+  background: var(--bg4); border: 1px solid var(--border); padding: 1px 6px;
+}
+
+/* ── CHART GRIDS ── */
+.cg2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 12px; }
+.cg3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 12px; }
+.cg4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 12px; }
+
+/* ── CHART CARD ── */
+.cc {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.cc:hover { border-color: var(--border2); background: var(--bg4); }
+.cc:hover .cc-expand { opacity: 1; }
+.cc.usa-card { border-left: 2px solid var(--usa)33; }
+.cc.eu-card  { border-left: 2px solid var(--eu)33; }
+.cc.cn-card  { border-left: 2px solid var(--cn)33; }
+.cc.manual { border-style: dashed; }
+
+.cc-top {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 10px;
+}
+.cc-left {}
+.cc-label {
+  font-size: 8px; letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 6px; line-height: 1.4;
+}
+.cc-value {
+  font-size: 22px; font-weight: 600; color: var(--text);
+  letter-spacing: -0.5px; line-height: 1;
+}
+.cc-change {
+  font-size: 10px; font-weight: 500; margin-top: 4px;
+  display: flex; align-items: center; gap: 3px;
+}
+.cc-change.up { color: var(--green); }
+.cc-change.dn { color: var(--red); }
+.cc-change.nt { color: var(--text3); }
+.cc-change.wn { color: var(--amber); }
+
+.cc-right { text-align: right; flex-shrink: 0; }
+.cc-src { font-size: 7px; color: var(--text3); letter-spacing: 0.5px; line-height: 1.5; }
+.cc-manual-badge {
+  display: inline-block; background: var(--bg4); border: 1px solid var(--border2);
+  color: var(--text3); font-size: 7px; letter-spacing: 0.8px; padding: 1px 5px; margin-top: 4px;
+}
+
+.cc-chart { position: relative; height: 120px; }
+.cc-chart-tall { position: relative; height: 160px; }
+
+.cc-expand {
+  position: absolute; top: 8px; right: 8px;
+  font-size: 9px; color: var(--text3); letter-spacing: 0.5px;
+  opacity: 0; transition: opacity 0.15s;
+  background: var(--bg3); border: 1px solid var(--border); padding: 2px 6px;
+  pointer-events: none;
+}
+
+.cc-sig-bar {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+}
+.cc-sig-bar.up { background: var(--green); opacity: 0.6; }
+.cc-sig-bar.dn { background: var(--red); opacity: 0.6; }
+.cc-sig-bar.nt { background: var(--border2); opacity: 1; }
+.cc-sig-bar.wn { background: var(--amber); opacity: 0.6; }
+
+/* ── MANUAL INPUT CARD ── */
+.cc-manual-input {
+  margin-top: 10px; display: flex; gap: 4px; align-items: center;
+}
+.m-input {
+  background: var(--bg3); border: 1px solid var(--border2); color: var(--text);
+  font-family: var(--mono); font-size: 11px; padding: 4px 8px; width: 100px; outline: none;
+}
+.m-input:focus { border-color: var(--accent); }
+.m-save {
+  background: var(--bg4); border: 1px solid var(--border2); color: var(--accent);
+  font-family: var(--mono); font-size: 8px; letter-spacing: 0.8px; padding: 4px 10px;
+  cursor: pointer; transition: all 0.1s; text-transform: uppercase;
+}
+.m-save:hover { background: var(--surface2); }
+.m-prev { font-size: 9px; color: var(--text3); margin-left: 4px; }
+
+/* ── DETAIL MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: #000000cc;
+  z-index: 1000; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--bg2); border: 1px solid var(--border2);
+  width: 90%; max-width: 900px; max-height: 88vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 24px 80px #00000088;
+}
+
+.modal-hdr {
+  background: var(--bg3); border-bottom: 1px solid var(--border);
+  padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
+  flex-shrink: 0;
+}
+.modal-title { font-size: 12px; font-weight: 600; color: var(--text); letter-spacing: 0.5px; }
+.modal-sub { font-size: 9px; color: var(--text3); margin-top: 2px; letter-spacing: 0.8px; text-transform: uppercase; }
+.modal-close {
+  background: var(--bg4); border: 1px solid var(--border2); color: var(--text2);
+  font-family: var(--mono); font-size: 11px; padding: 5px 12px; cursor: pointer;
+  transition: all 0.15s;
+}
+.modal-close:hover { border-color: var(--red); color: var(--red); }
+
+.modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+
+.modal-stats {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 1px;
+  background: var(--border); border: 1px solid var(--border); margin-bottom: 20px;
+}
+.modal-stat {
+  background: var(--surface); padding: 12px 14px;
+}
+.modal-stat-label { font-size: 8px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; }
+.modal-stat-val { font-size: 18px; font-weight: 600; color: var(--text); }
+.modal-stat-sub { font-size: 9px; color: var(--text3); margin-top: 2px; }
+
+.modal-chart-wrap { position: relative; height: 260px; margin-bottom: 20px; }
+
+.modal-table-wrap { overflow-x: auto; }
+.modal-table {
+  width: 100%; border-collapse: collapse; font-size: 11px;
+}
+.modal-table th {
+  background: var(--bg3); border-bottom: 1px solid var(--border);
+  padding: 8px 12px; font-size: 8px; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--text3); text-align: right; font-weight: 500;
+}
+.modal-table th:first-child { text-align: left; }
+.modal-table td {
+  padding: 7px 12px; border-bottom: 1px solid var(--border);
+  text-align: right; color: var(--text2);
+}
+.modal-table td:first-child { text-align: left; color: var(--text3); }
+.modal-table tr:last-child td { border-bottom: none; }
+.modal-table tr:hover td { background: var(--bg4); }
+.modal-table .pos { color: var(--green); }
+.modal-table .neg { color: var(--red); }
+
+/* ── LOADING ── */
+.spin { display: inline-block; width: 9px; height: 9px; border: 1px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 3px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1200px) { .cg4 { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 900px)  { .cg3 { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 600px)  {
+  .cg2,.cg3,.cg4 { grid-template-columns: 1fr; }
+  .geo-section { padding: 20px 14px; }
+  .modal-stats { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-brand">
+    <div class="hdr-logo">IND//KPI</div>
+    <div class="hdr-sep"></div>
+    <div class="hdr-title">Macro Intelligence — USA · Europe · China</div>
+  </div>
+  <div class="hdr-right">
+    <div class="hdr-status"><span class="live-dot loading" id="liveDot"></span><span id="liveText">Initializing</span></div>
+    <div class="hdr-time" id="hdrTime">—</div>
+    <button class="btn-ref" id="btnRef" onclick="loadAll()">↻ REFRESH</button>
+  </div>
+</div>
+
+<!-- GEO NAV -->
+<div class="geo-nav">
+  <button class="geo-btn usa active" onclick="scrollGeo('usa',this)"><span class="geo-flag">🇺🇸</span> United States</button>
+  <div class="geo-divider"></div>
+  <button class="geo-btn eu" onclick="scrollGeo('eu',this)"><span class="geo-flag">🇪🇺</span> Europe</button>
+  <div class="geo-divider"></div>
+  <button class="geo-btn cn" onclick="scrollGeo('cn',this)"><span class="geo-flag">🇨🇳</span> China</button>
+  <button class="geo-scroll-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ TOP</button>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hdr">
+      <div>
+        <div class="modal-title" id="modalTitle">—</div>
+        <div class="modal-sub" id="modalSub">—</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕ CLOSE</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-stats">
+        <div class="modal-stat"><div class="modal-stat-label">Latest</div><div class="modal-stat-val" id="ms-latest">—</div><div class="modal-stat-sub" id="ms-latest-d">—</div></div>
+        <div class="modal-stat"><div class="modal-stat-label">Prior Period</div><div class="modal-stat-val" id="ms-prior">—</div><div class="modal-stat-sub" id="ms-prior-d">—</div></div>
+        <div class="modal-stat"><div class="modal-stat-label">Change</div><div class="modal-stat-val" id="ms-chg">—</div><div class="modal-stat-sub" id="ms-chg-d">—</div></div>
+        <div class="modal-stat"><div class="modal-stat-label">12M Range</div><div class="modal-stat-val" id="ms-range">—</div><div class="modal-stat-sub" id="ms-range-d">—</div></div>
+      </div>
+      <div class="modal-chart-wrap"><canvas id="modalChart"></canvas></div>
+      <div class="modal-table-wrap">
+        <table class="modal-table">
+          <thead><tr><th>Date</th><th>Value</th><th>MoM Change</th><th>MoM %</th><th>YoY %</th></tr></thead>
+          <tbody id="modalTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- PAGE CONTENT -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page">
+
+<!-- ────────────────────────────────────────────────────── -->
+<!-- 🇺🇸 UNITED STATES -->
+<!-- ────────────────────────────────────────────────────── -->
+<div class="geo-section" id="section-usa">
+  <div class="geo-header">
+    <div class="geo-accent-bar usa"></div>
+    <div class="geo-info">
+      <div class="geo-name">United States</div>
+      <div class="geo-sub">Activity · Labor · Prices · Surveys · Inventory Cycle</div>
+    </div>
+  </div>
+
+  <!-- Activity & Output -->
+  <div class="bucket-head"><div class="bucket-label">Activity & Output</div><div class="bucket-line"></div><div class="bucket-count">7 series</div></div>
+  <div class="cg4">
+    <div class="cc usa-card" onclick="openModal('INDPRO')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Industrial Production</div><div class="cc-value" id="v-INDPRO">—</div><div class="cc-change nt" id="g-INDPRO"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · INDPRO<br>Monthly · Index</div></div></div><div class="cc-chart"><canvas id="c-INDPRO"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-INDPRO"></div></div>
+    <div class="cc usa-card" onclick="openModal('TCU')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Capacity Utilization</div><div class="cc-value" id="v-TCU">—</div><div class="cc-change nt" id="g-TCU"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · TCU<br>Monthly · %</div></div></div><div class="cc-chart"><canvas id="c-TCU"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-TCU"></div></div>
+    <div class="cc usa-card" onclick="openModal('IPMAN')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Manufacturing Output</div><div class="cc-value" id="v-IPMAN">—</div><div class="cc-change nt" id="g-IPMAN"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · IPMAN<br>Monthly · Index</div></div></div><div class="cc-chart"><canvas id="c-IPMAN"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-IPMAN"></div></div>
+    <div class="cc usa-card" onclick="openModal('GDPC1')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Real GDP</div><div class="cc-value" id="v-GDPC1">—</div><div class="cc-change nt" id="g-GDPC1"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · GDPC1<br>Quarterly · $B</div></div></div><div class="cc-chart"><canvas id="c-GDPC1"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-GDPC1"></div></div>
+    <div class="cc usa-card" onclick="openModal('ADXTNO')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Durable Goods (ex-def, ex-air)</div><div class="cc-value" id="v-ADXTNO">—</div><div class="cc-change nt" id="g-ADXTNO"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · ADXTNO<br>Monthly · $M</div></div></div><div class="cc-chart"><canvas id="c-ADXTNO"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-ADXTNO"></div></div>
+    <div class="cc usa-card" onclick="openModal('AMTMNO')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Factory Orders</div><div class="cc-value" id="v-AMTMNO">—</div><div class="cc-change nt" id="g-AMTMNO"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · AMTMNO<br>Monthly · $M</div></div></div><div class="cc-chart"><canvas id="c-AMTMNO"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-AMTMNO"></div></div>
+    <div class="cc usa-card" onclick="openModal('RSXFS')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Retail Sales (ex-autos)</div><div class="cc-value" id="v-RSXFS">—</div><div class="cc-change nt" id="g-RSXFS"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · RSXFS<br>Monthly · $M</div></div></div><div class="cc-chart"><canvas id="c-RSXFS"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-RSXFS"></div></div>
+  </div>
+
+  <!-- Labor Market -->
+  <div class="bucket-head"><div class="bucket-label">Labor Market</div><div class="bucket-line"></div><div class="bucket-count">4 series</div></div>
+  <div class="cg4">
+    <div class="cc usa-card" onclick="openModal('MANEMP')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Mfg Employment (000s)</div><div class="cc-value" id="v-MANEMP">—</div><div class="cc-change nt" id="g-MANEMP"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · MANEMP<br>Monthly · 000s</div></div></div><div class="cc-chart"><canvas id="c-MANEMP"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-MANEMP"></div></div>
+    <div class="cc usa-card" onclick="openModal('AWHMAN')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Mfg Avg Weekly Hours</div><div class="cc-value" id="v-AWHMAN">—</div><div class="cc-change nt" id="g-AWHMAN"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · AWHMAN<br>Monthly · hrs</div></div></div><div class="cc-chart"><canvas id="c-AWHMAN"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-AWHMAN"></div></div>
+    <div class="cc usa-card" onclick="openModal('JTSJOL')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Job Openings: Mfg (000s)</div><div class="cc-value" id="v-JTSJOL">—</div><div class="cc-change nt" id="g-JTSJOL"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · JTSJOL<br>Monthly · 000s</div></div></div><div class="cc-chart"><canvas id="c-JTSJOL"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-JTSJOL"></div></div>
+    <div class="cc usa-card" onclick="openModal('ICSA')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Initial Jobless Claims</div><div class="cc-value" id="v-ICSA">—</div><div class="cc-change nt" id="g-ICSA"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · ICSA<br>Weekly · 000s</div></div></div><div class="cc-chart"><canvas id="c-ICSA"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-ICSA"></div></div>
+  </div>
+
+  <!-- Prices -->
+  <div class="bucket-head"><div class="bucket-label">Prices & Inflation</div><div class="bucket-line"></div><div class="bucket-count">4 series</div></div>
+  <div class="cg4">
+    <div class="cc usa-card" onclick="openModal('PPIFIS')"><div class="cc-top"><div class="cc-left"><div class="cc-label">PPI Final Demand</div><div class="cc-value" id="v-PPIFIS">—</div><div class="cc-change nt" id="g-PPIFIS"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · PPIFIS<br>Monthly · Index</div></div></div><div class="cc-chart"><canvas id="c-PPIFIS"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-PPIFIS"></div></div>
+    <div class="cc usa-card" onclick="openModal('PPIIDC')"><div class="cc-top"><div class="cc-left"><div class="cc-label">PPI Intermediate Goods</div><div class="cc-value" id="v-PPIIDC">—</div><div class="cc-change nt" id="g-PPIIDC"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · PPIIDC<br>Monthly · Index</div></div></div><div class="cc-chart"><canvas id="c-PPIIDC"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-PPIIDC"></div></div>
+    <div class="cc usa-card" onclick="openModal('IR')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Import Price Index</div><div class="cc-value" id="v-IR">—</div><div class="cc-change nt" id="g-IR"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · IR<br>Monthly · Index</div></div></div><div class="cc-chart"><canvas id="c-IR"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-IR"></div></div>
+    <div class="cc usa-card" onclick="openModal('CPIAUCSL')"><div class="cc-top"><div class="cc-left"><div class="cc-label">CPI All Items</div><div class="cc-value" id="v-CPIAUCSL">—</div><div class="cc-change nt" id="g-CPIAUCSL"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · CPIAUCSL<br>Monthly · Index</div></div></div><div class="cc-chart"><canvas id="c-CPIAUCSL"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-CPIAUCSL"></div></div>
+  </div>
+
+  <!-- Business Surveys -->
+  <div class="bucket-head"><div class="bucket-label">Business Surveys & Sentiment</div><div class="bucket-line"></div><div class="bucket-count">5 series</div></div>
+  <div class="cg4">
+    <div class="cc usa-card manual" onclick="openManualModal('ism')"><div class="cc-top"><div class="cc-left"><div class="cc-label">ISM Manufacturing PMI</div><div class="cc-value" id="v-ism">—</div><div class="cc-change nt" id="g-ism">Manual entry</div></div><div class="cc-right"><div class="cc-src">ISM · Monthly<br>50 = Expansion</div><div class="cc-manual-badge">⚑ MANUAL</div></div></div><div class="cc-manual-input"><input class="m-input" id="inp-ism" type="number" placeholder="e.g. 49.2" step="0.1"><button class="m-save" onclick="event.stopPropagation();saveM('ism',true)">SAVE</button><span class="m-prev" id="prev-ism"></span></div><div class="cc-sig-bar nt" id="sb-ism"></div></div>
+    <div class="cc usa-card manual" onclick="openManualModal('ism-orders')"><div class="cc-top"><div class="cc-left"><div class="cc-label">ISM New Orders Sub-Index</div><div class="cc-value" id="v-ism-orders">—</div><div class="cc-change nt" id="g-ism-orders">Manual entry</div></div><div class="cc-right"><div class="cc-src">ISM · Monthly<br>50 = Expansion</div><div class="cc-manual-badge">⚑ MANUAL</div></div></div><div class="cc-manual-input"><input class="m-input" id="inp-ism-orders" type="number" placeholder="e.g. 51.4" step="0.1"><button class="m-save" onclick="event.stopPropagation();saveM('ism-orders',true)">SAVE</button><span class="m-prev" id="prev-ism-orders"></span></div><div class="cc-sig-bar nt" id="sb-ism-orders"></div></div>
+    <div class="cc usa-card" onclick="openModal('USSLIND')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Conference Board LEI</div><div class="cc-value" id="v-USSLIND">—</div><div class="cc-change nt" id="g-USSLIND"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · USSLIND<br>Monthly</div></div></div><div class="cc-chart"><canvas id="c-USSLIND"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-USSLIND"></div></div>
+    <div class="cc usa-card" onclick="openModal('CSCICP03USM665S')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Consumer Confidence</div><div class="cc-value" id="v-CSCICP03USM665S">—</div><div class="cc-change nt" id="g-CSCICP03USM665S"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · CSCICP03USM665S<br>Monthly</div></div></div><div class="cc-chart"><canvas id="c-CSCICP03USM665S"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-CSCICP03USM665S"></div></div>
+    <div class="cc usa-card" onclick="openModal('PHILLYFED')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Philly Fed Mfg Index</div><div class="cc-value" id="v-PHILLYFED">—</div><div class="cc-change nt" id="g-PHILLYFED"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · MPMJPMA<br>Monthly · Diffusion</div></div></div><div class="cc-chart"><canvas id="c-PHILLYFED"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-PHILLYFED"></div></div>
+  </div>
+
+  <!-- Inventory Cycle -->
+  <div class="bucket-head"><div class="bucket-label">Inventory Cycle</div><div class="bucket-line"></div><div class="bucket-count">3 series</div></div>
+  <div class="cg3">
+    <div class="cc usa-card" onclick="openModal('BUSINV')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Business Inventories ($M)</div><div class="cc-value" id="v-BUSINV">—</div><div class="cc-change nt" id="g-BUSINV"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · BUSINV<br>Monthly · $M</div></div></div><div class="cc-chart-tall"><canvas id="c-BUSINV"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-BUSINV"></div></div>
+    <div class="cc usa-card" onclick="openModal('ISRATIO')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Inventory / Sales Ratio</div><div class="cc-value" id="v-ISRATIO">—</div><div class="cc-change nt" id="g-ISRATIO"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · ISRATIO<br>Monthly · Ratio</div></div></div><div class="cc-chart-tall"><canvas id="c-ISRATIO"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-ISRATIO"></div></div>
+    <div class="cc usa-card" onclick="openModal('MCUMFN')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Mfg Capacity Utilization</div><div class="cc-value" id="v-MCUMFN">—</div><div class="cc-change nt" id="g-MCUMFN"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · MCUMFN<br>Monthly · %</div></div></div><div class="cc-chart-tall"><canvas id="c-MCUMFN"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-MCUMFN"></div></div>
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────── -->
+<!-- 🇪🇺 EUROPE -->
+<!-- ────────────────────────────────────────────────────── -->
+<div class="geo-section" id="section-eu">
+  <div class="geo-header">
+    <div class="geo-accent-bar eu"></div>
+    <div class="geo-info">
+      <div class="geo-name">Europe</div>
+      <div class="geo-sub">Eurozone + Germany — Siemens · Schneider · ABB · Legrand exposure</div>
+    </div>
+  </div>
+
+  <!-- Eurozone Activity -->
+  <div class="bucket-head"><div class="bucket-label">Eurozone — Activity & Output</div><div class="bucket-line"></div><div class="bucket-count">3 series</div></div>
+  <div class="cg3">
+    <div class="cc eu-card" onclick="openModal('XTIMVA01EZM661S')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Eurozone Industrial Production</div><div class="cc-value" id="v-XTIMVA01EZM661S">—</div><div class="cc-change nt" id="g-XTIMVA01EZM661S"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · XTIMVA01EZM661S<br>Monthly · Index</div></div></div><div class="cc-chart-tall"><canvas id="c-XTIMVA01EZM661S"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-XTIMVA01EZM661S"></div></div>
+    <div class="cc eu-card" onclick="openModal('CLVMNACSCAB1GQEA19')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Eurozone Real GDP</div><div class="cc-value" id="v-CLVMNACSCAB1GQEA19">—</div><div class="cc-change nt" id="g-CLVMNACSCAB1GQEA19"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · CLVMNACSCAB1GQEA19<br>Quarterly</div></div></div><div class="cc-chart-tall"><canvas id="c-CLVMNACSCAB1GQEA19"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-CLVMNACSCAB1GQEA19"></div></div>
+    <div class="cc eu-card" onclick="openModal('ECBDFR')"><div class="cc-top"><div class="cc-left"><div class="cc-label">ECB Deposit Facility Rate</div><div class="cc-value" id="v-ECBDFR">—</div><div class="cc-change nt" id="g-ECBDFR"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · ECBDFR<br>Daily · %</div></div></div><div class="cc-chart-tall"><canvas id="c-ECBDFR"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-ECBDFR"></div></div>
+  </div>
+
+  <!-- Eurozone Macro -->
+  <div class="bucket-head"><div class="bucket-label">Eurozone — Consumer, Prices & Labor</div><div class="bucket-line"></div><div class="bucket-count">4 series</div></div>
+  <div class="cg4">
+    <div class="cc eu-card" onclick="openModal('CSCICP03EZM665S')"><div class="cc-top"><div class="cc-left"><div class="cc-label">EU Consumer Confidence</div><div class="cc-value" id="v-CSCICP03EZM665S">—</div><div class="cc-change nt" id="g-CSCICP03EZM665S"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · CSCICP03EZM665S<br>Monthly</div></div></div><div class="cc-chart"><canvas id="c-CSCICP03EZM665S"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-CSCICP03EZM665S"></div></div>
+    <div class="cc eu-card" onclick="openModal('LRHUTTTTEZM156S')"><div class="cc-top"><div class="cc-left"><div class="cc-label">EU Unemployment Rate</div><div class="cc-value" id="v-LRHUTTTTEZM156S">—</div><div class="cc-change nt" id="g-LRHUTTTTEZM156S"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · LRHUTTTTEZM156S<br>Monthly · %</div></div></div><div class="cc-chart"><canvas id="c-LRHUTTTTEZM156S"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-LRHUTTTTEZM156S"></div></div>
+    <div class="cc eu-card" onclick="openModal('PIEAMP02EZM661N')"><div class="cc-top"><div class="cc-left"><div class="cc-label">EU Producer Prices (PPI)</div><div class="cc-value" id="v-PIEAMP02EZM661N">—</div><div class="cc-change nt" id="g-PIEAMP02EZM661N"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · PIEAMP02EZM661N<br>Monthly · Index</div></div></div><div class="cc-chart"><canvas id="c-PIEAMP02EZM661N"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-PIEAMP02EZM661N"></div></div>
+    <div class="cc eu-card" onclick="openModal('DEXUSEU')"><div class="cc-top"><div class="cc-left"><div class="cc-label">EUR / USD</div><div class="cc-value" id="v-DEXUSEU">—</div><div class="cc-change nt" id="g-DEXUSEU"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · DEXUSEU<br>Daily</div></div></div><div class="cc-chart"><canvas id="c-DEXUSEU"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-DEXUSEU"></div></div>
+  </div>
+
+  <!-- Eurozone Surveys -->
+  <div class="bucket-head"><div class="bucket-label">Eurozone — Surveys (Manual)</div><div class="bucket-line"></div><div class="bucket-count">3 manual</div></div>
+  <div class="cg3">
+    <div class="cc eu-card manual"><div class="cc-top"><div class="cc-left"><div class="cc-label">Eurozone Mfg PMI</div><div class="cc-value" id="v-ez-pmi">—</div><div class="cc-change nt" id="g-ez-pmi">Manual entry</div></div><div class="cc-right"><div class="cc-src">S&P Global · Monthly<br>spglobal.com</div><div class="cc-manual-badge">⚑ MANUAL</div></div></div><div class="cc-manual-input"><input class="m-input" id="inp-ez-pmi" type="number" placeholder="e.g. 46.1" step="0.1"><button class="m-save" onclick="saveM('ez-pmi',true)">SAVE</button><span class="m-prev" id="prev-ez-pmi"></span></div><div class="cc-sig-bar nt" id="sb-ez-pmi"></div></div>
+    <div class="cc eu-card manual"><div class="cc-top"><div class="cc-left"><div class="cc-label">Eurozone Composite PMI</div><div class="cc-value" id="v-ez-composite">—</div><div class="cc-change nt" id="g-ez-composite">Manual entry</div></div><div class="cc-right"><div class="cc-src">S&P Global · Monthly<br>spglobal.com</div><div class="cc-manual-badge">⚑ MANUAL</div></div></div><div class="cc-manual-input"><input class="m-input" id="inp-ez-composite" type="number" placeholder="e.g. 49.3" step="0.1"><button class="m-save" onclick="saveM('ez-composite',true)">SAVE</button><span class="m-prev" id="prev-ez-composite"></span></div><div class="cc-sig-bar nt" id="sb-ez-composite"></div></div>
+    <div class="cc eu-card manual"><div class="cc-top"><div class="cc-left"><div class="cc-label">ZEW Economic Sentiment</div><div class="cc-value" id="v-zew">—</div><div class="cc-change nt" id="g-zew">Manual entry</div></div><div class="cc-right"><div class="cc-src">ZEW · Monthly<br>zew.de</div><div class="cc-manual-badge">⚑ MANUAL</div></div></div><div class="cc-manual-input"><input class="m-input" id="inp-zew" type="number" placeholder="e.g. 13.4" step="0.1"><button class="m-save" onclick="saveM('zew',true)">SAVE</button><span class="m-prev" id="prev-zew"></span></div><div class="cc-sig-bar nt" id="sb-zew"></div></div>
+  </div>
+
+  <!-- Germany -->
+  <div class="bucket-head"><div class="bucket-label">Germany — Industrial Bellwether</div><div class="bucket-line"></div><div class="bucket-count">4 series</div></div>
+  <div class="cg4">
+    <div class="cc eu-card" onclick="openModal('GKIOG02DEQ661S')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Germany Industrial Production</div><div class="cc-value" id="v-GKIOG02DEQ661S">—</div><div class="cc-change nt" id="g-GKIOG02DEQ661S"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · GKIOG02DEQ661S<br>Quarterly · Index</div></div></div><div class="cc-chart"><canvas id="c-GKIOG02DEQ661S"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-GKIOG02DEQ661S"></div></div>
+    <div class="cc eu-card" onclick="openModal('CLVMNACSCAB1GQDE')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Germany Real GDP</div><div class="cc-value" id="v-CLVMNACSCAB1GQDE">—</div><div class="cc-change nt" id="g-CLVMNACSCAB1GQDE"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · CLVMNACSCAB1GQDE<br>Quarterly</div></div></div><div class="cc-chart"><canvas id="c-CLVMNACSCAB1GQDE"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-CLVMNACSCAB1GQDE"></div></div>
+    <div class="cc eu-card manual"><div class="cc-top"><div class="cc-left"><div class="cc-label">IFO Business Climate</div><div class="cc-value" id="v-ifo">—</div><div class="cc-change nt" id="g-ifo">Manual entry</div></div><div class="cc-right"><div class="cc-src">IFO Institute · Monthly<br>ifo.de</div><div class="cc-manual-badge">⚑ MANUAL</div></div></div><div class="cc-manual-input"><input class="m-input" id="inp-ifo" type="number" placeholder="e.g. 85.4" step="0.1"><button class="m-save" onclick="saveM('ifo',true)">SAVE</button><span class="m-prev" id="prev-ifo"></span></div><div class="cc-sig-bar nt" id="sb-ifo"></div></div>
+    <div class="cc eu-card manual"><div class="cc-top"><div class="cc-left"><div class="cc-label">IFO Expectations</div><div class="cc-value" id="v-ifo-exp">—</div><div class="cc-change nt" id="g-ifo-exp">Manual entry</div></div><div class="cc-right"><div class="cc-src">IFO Institute · Monthly<br>ifo.de</div><div class="cc-manual-badge">⚑ MANUAL</div></div></div><div class="cc-manual-input"><input class="m-input" id="inp-ifo-exp" type="number" placeholder="e.g. 85.4" step="0.1"><button class="m-save" onclick="saveM('ifo-exp',true)">SAVE</button><span class="m-prev" id="prev-ifo-exp"></span></div><div class="cc-sig-bar nt" id="sb-ifo-exp"></div></div>
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────── -->
+<!-- 🇨🇳 CHINA -->
+<!-- ────────────────────────────────────────────────────── -->
+<div class="geo-section" id="section-cn">
+  <div class="geo-header">
+    <div class="geo-accent-bar cn"></div>
+    <div class="geo-info">
+      <div class="geo-name">China</div>
+      <div class="geo-sub">Key demand signal for European names — Siemens · ABB · Schneider · Legrand China revenue</div>
+    </div>
+  </div>
+
+  <div class="bucket-head"><div class="bucket-label">PMI Surveys</div><div class="bucket-line"></div><div class="bucket-count">2 manual</div></div>
+  <div class="cg3">
+    <div class="cc cn-card manual"><div class="cc-top"><div class="cc-left"><div class="cc-label">NBS Manufacturing PMI</div><div class="cc-value" id="v-nbs-pmi">—</div><div class="cc-change nt" id="g-nbs-pmi">Manual entry</div></div><div class="cc-right"><div class="cc-src">NBS China · Monthly<br>stats.gov.cn · 50 = expansion</div><div class="cc-manual-badge">⚑ MANUAL</div></div></div><div class="cc-manual-input"><input class="m-input" id="inp-nbs-pmi" type="number" placeholder="e.g. 50.1" step="0.1"><button class="m-save" onclick="saveM('nbs-pmi',true)">SAVE</button><span class="m-prev" id="prev-nbs-pmi"></span></div><div class="cc-sig-bar nt" id="sb-nbs-pmi"></div></div>
+    <div class="cc cn-card manual"><div class="cc-top"><div class="cc-left"><div class="cc-label">Caixin Manufacturing PMI</div><div class="cc-value" id="v-caixin-pmi">—</div><div class="cc-change nt" id="g-caixin-pmi">Manual entry</div></div><div class="cc-right"><div class="cc-src">Caixin/S&P Global · Monthly<br>Private sector focused · 50 = exp.</div><div class="cc-manual-badge">⚑ MANUAL</div></div></div><div class="cc-manual-input"><input class="m-input" id="inp-caixin-pmi" type="number" placeholder="e.g. 50.8" step="0.1"><button class="m-save" onclick="saveM('caixin-pmi',true)">SAVE</button><span class="m-prev" id="prev-caixin-pmi"></span></div><div class="cc-sig-bar nt" id="sb-caixin-pmi"></div></div>
+    <div class="cc cn-card" onclick="openModal('DEXCHUS')"><div class="cc-top"><div class="cc-left"><div class="cc-label">USD / CNY Exchange Rate</div><div class="cc-value" id="v-DEXCHUS">—</div><div class="cc-change nt" id="g-DEXCHUS"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · DEXCHUS<br>Daily</div></div></div><div class="cc-chart-tall"><canvas id="c-DEXCHUS"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-DEXCHUS"></div></div>
+  </div>
+
+  <div class="bucket-head"><div class="bucket-label">Trade Flows</div><div class="bucket-line"></div><div class="bucket-count">2 series</div></div>
+  <div class="cg2">
+    <div class="cc cn-card" onclick="openModal('XTEXVA01CNM664S')"><div class="cc-top"><div class="cc-left"><div class="cc-label">China Exports</div><div class="cc-value" id="v-XTEXVA01CNM664S">—</div><div class="cc-change nt" id="g-XTEXVA01CNM664S"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · XTEXVA01CNM664S<br>Monthly · $M</div></div></div><div class="cc-chart-tall"><canvas id="c-XTEXVA01CNM664S"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-XTEXVA01CNM664S"></div></div>
+    <div class="cc cn-card" onclick="openModal('XTIMVA01CNM664S')"><div class="cc-top"><div class="cc-left"><div class="cc-label">China Imports</div><div class="cc-value" id="v-XTIMVA01CNM664S">—</div><div class="cc-change nt" id="g-XTIMVA01CNM664S"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · XTIMVA01CNM664S<br>Monthly · $M</div></div></div><div class="cc-chart-tall"><canvas id="c-XTIMVA01CNM664S"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-XTIMVA01CNM664S"></div></div>
+  </div>
+</div>
+
+</div><!-- end .page -->
+
+<script>
+// ══════════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════════
+const FRED_KEY = '158a42813f5a5d73b9acf45c2dad5dec';
+
+// All FRED series to auto-load
+const FRED_SERIES = [
+  // USA Activity
+  { id:'INDPRO',    fmt: v=>v.toFixed(1),      unit:'idx',    sig: d=>d>0?'up':'dn', label:'Industrial Production' },
+  { id:'TCU',       fmt: v=>v.toFixed(1)+'%',  unit:'%',      sig: d=>d>0?'up':'dn', label:'Capacity Utilization' },
+  { id:'IPMAN',     fmt: v=>v.toFixed(1),       unit:'idx',    sig: d=>d>0?'up':'dn', label:'Mfg Output' },
+  { id:'GDPC1',     fmt: v=>'$'+v.toFixed(0),   unit:'$B',     sig: d=>d>0?'up':'dn', label:'Real GDP' },
+  { id:'ADXTNO',    fmt: v=>'$'+v.toFixed(0),   unit:'$M',     sig: d=>d>0?'up':'dn', label:'Durable Goods' },
+  { id:'AMTMNO',    fmt: v=>'$'+v.toFixed(0),   unit:'$M',     sig: d=>d>0?'up':'dn', label:'Factory Orders' },
+  { id:'RSXFS',     fmt: v=>'$'+v.toFixed(0),   unit:'$M',     sig: d=>d>0?'up':'dn', label:'Retail Sales ex-Auto' },
+  // USA Labor
+  { id:'MANEMP',    fmt: v=>v.toFixed(0),        unit:'000s',  sig: d=>d>0?'up':'dn', label:'Mfg Employment' },
+  { id:'AWHMAN',    fmt: v=>v.toFixed(1),         unit:'hrs',   sig: d=>d>0?'up':'dn', label:'Avg Weekly Hours' },
+  { id:'JTSJOL',    fmt: v=>v.toFixed(0),          unit:'000s', sig: d=>d>0?'up':'dn', label:'Mfg Job Openings' },
+  { id:'ICSA',      fmt: v=>v.toFixed(0),          unit:'000s', sig: d=>d<0?'up':'dn', label:'Initial Claims' },
+  // USA Prices
+  { id:'PPIFIS',    fmt: v=>v.toFixed(1),       unit:'idx',    sig: d=>d<0?'up':d>0.5?'wn':'nt', label:'PPI Final Demand' },
+  { id:'PPIIDC',    fmt: v=>v.toFixed(1),       unit:'idx',    sig: d=>d<0?'up':d>0.5?'wn':'nt', label:'PPI Intermediate' },
+  { id:'IR',        fmt: v=>v.toFixed(1),        unit:'idx',   sig: d=>d<0?'up':d>0.5?'wn':'nt', label:'Import Prices' },
+  { id:'CPIAUCSL',  fmt: v=>v.toFixed(1),       unit:'idx',    sig: d=>d<0?'up':d>0.3?'wn':'nt', label:'CPI' },
+  // USA Surveys
+  { id:'USSLIND',   fmt: v=>v.toFixed(1),        unit:'idx',   sig: d=>d>0?'up':'dn', label:'CB LEI' },
+  { id:'CSCICP03USM665S', fmt: v=>v.toFixed(1), unit:'idx',   sig: d=>d>0?'up':'dn', label:'Consumer Confidence' },
+  { id:'MPMJPMA',   fmt: v=>v.toFixed(1),        unit:'idx',   sig: d=>d>0?'up':'dn', label:'Philly Fed', altKey:'PHILLYFED' },
+  // USA Inventory
+  { id:'BUSINV',    fmt: v=>'$'+v.toFixed(0),   unit:'$M',     sig: d=>d<0?'up':'wn', label:'Business Inventories' },
+  { id:'ISRATIO',   fmt: v=>v.toFixed(2),        unit:'ratio', sig: d=>d<0?'up':'wn', label:'Inventory/Sales Ratio' },
+  { id:'MCUMFN',    fmt: v=>v.toFixed(1)+'%',   unit:'%',      sig: d=>d>0?'up':'dn', label:'Mfg Cap Utilization' },
+  // Europe EZ
+  { id:'XTIMVA01EZM661S',     fmt:v=>v.toFixed(1),     unit:'idx',  sig:d=>d>0?'up':'dn', label:'EZ Industrial Production' },
+  { id:'CLVMNACSCAB1GQEA19',  fmt:v=>v.toFixed(0),     unit:'idx',  sig:d=>d>0?'up':'dn', label:'EZ Real GDP' },
+  { id:'ECBDFR',              fmt:v=>v.toFixed(2)+'%', unit:'%',    sig:d=>d<0?'up':d>0?'wn':'nt', label:'ECB Rate' },
+  { id:'CSCICP03EZM665S',     fmt:v=>v.toFixed(1),     unit:'idx',  sig:d=>d>0?'up':'dn', label:'EU Consumer Confidence' },
+  { id:'LRHUTTTTEZM156S',     fmt:v=>v.toFixed(1)+'%', unit:'%',   sig:d=>d<0?'up':'dn', label:'EU Unemployment' },
+  { id:'PIEAMP02EZM661N',     fmt:v=>v.toFixed(1),     unit:'idx',  sig:d=>d<0?'up':d>0.5?'wn':'nt', label:'EU PPI' },
+  { id:'DEXUSEU',             fmt:v=>v.toFixed(4),     unit:'',     sig:d=>d>0?'up':'dn', label:'EUR/USD' },
+  // Europe Germany
+  { id:'GKIOG02DEQ661S',      fmt:v=>v.toFixed(1),     unit:'idx',  sig:d=>d>0?'up':'dn', label:'Germany Ind. Production' },
+  { id:'CLVMNACSCAB1GQDE',    fmt:v=>v.toFixed(0),     unit:'idx',  sig:d=>d>0?'up':'dn', label:'Germany Real GDP' },
+  // China
+  { id:'DEXCHUS',             fmt:v=>v.toFixed(4),     unit:'',     sig:d=>d<0?'up':'dn', label:'USD/CNY' },
+  { id:'XTEXVA01CNM664S',     fmt:v=>'$'+v.toFixed(0), unit:'$M',  sig:d=>d>0?'up':'dn', label:'China Exports' },
+  { id:'XTIMVA01CNM664S',     fmt:v=>'$'+v.toFixed(0), unit:'$M',  sig:d=>d>0?'up':'dn', label:'China Imports' },
+];
+
+// Manual KPIs
+const MANUAL_KEYS = ['ism','ism-orders','ez-pmi','ez-composite','zew','ifo','ifo-exp','nbs-pmi','caixin-pmi'];
+const PMI_KEYS = ['ism','ism-orders','ez-pmi','ez-composite','nbs-pmi','caixin-pmi'];
+
+// State
+const S = {
+  charts: {},
+  data: {},
+  manual: JSON.parse(localStorage.getItem('kpi_manual_v2') || '{}'),
+  modalChart: null
+};
+
+// ══════════════════════════════════════════════════════════
+// GEO NAV
+// ══════════════════════════════════════════════════════════
+function scrollGeo(geo, btn) {
+  document.querySelectorAll('.geo-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const el = document.getElementById('section-' + geo);
+  const offset = 100; // header + geo-nav height
+  window.scrollTo({ top: el.offsetTop - offset, behavior: 'smooth' });
+}
+
+// ══════════════════════════════════════════════════════════
+// FRED DATA FETCH
+// ══════════════════════════════════════════════════════════
+async function fetchFRED(seriesId, limit = 26) {
+  const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${FRED_KEY}&file_type=json&sort_order=desc&limit=${limit}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const json = await res.json();
+    const obs = json.observations.filter(o => o.value !== '.' && o.value !== 'NA' && !isNaN(parseFloat(o.value)));
+    return obs.reverse();
+  } catch { return null; }
+}
+
+function sigClass(sig) {
+  return { up:'up', dn:'dn', wn:'wn', nt:'nt' }[sig] || 'nt';
+}
+
+function sigArrow(delta) { return delta >= 0 ? '▲' : '▼'; }
+
+function renderCard(series, data) {
+  const key = series.altKey || series.id;
+  const latest = parseFloat(data[data.length - 1].value);
+  const prev   = parseFloat(data[data.length - 2].value);
+  const delta  = latest - prev;
+  const pct    = ((delta / Math.abs(prev)) * 100).toFixed(2);
+  const sig    = series.sig(delta);
+  const sc     = sigClass(sig);
+  const arrow  = sigArrow(delta);
+  const fmtd   = series.fmt(latest);
+
+  // Update card values
+  const vEl = document.getElementById('v-' + key);
+  const gEl = document.getElementById('g-' + key);
+  const sbEl = document.getElementById('sb-' + key);
+
+  if (vEl) vEl.textContent = fmtd;
+  if (gEl) {
+    gEl.className = `cc-change ${sc}`;
+    gEl.innerHTML = `${arrow} ${Math.abs(delta).toFixed(2)} (${pct}%)`;
+  }
+  if (sbEl) sbEl.className = `cc-sig-bar ${sc}`;
+
+  // Build mini chart
+  const cEl = document.getElementById('c-' + key);
+  if (cEl) {
+    buildChart('c-' + key, data, series.fmt, sig, 'mini');
+  }
+
+  // Store data
+  S.data[series.id] = { data, series, latest, prev, delta, pct, fmtd };
+}
+
+// ══════════════════════════════════════════════════════════
+// CHART BUILDER
+// ══════════════════════════════════════════════════════════
+function buildChart(canvasId, data, fmtFn, sig, mode = 'mini') {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  if (S.charts[canvasId]) { S.charts[canvasId].destroy(); delete S.charts[canvasId]; }
+
+  const colorMap = { up:'#10b981', dn:'#ef4444', wn:'#f59e0b', nt:'#3b82f6' };
+  const color = colorMap[sig] || '#3b82f6';
+
+  const labels = data.map(d => d.date.slice(0, 7));
+  const values = data.map(d => parseFloat(d.value));
+
+  // Use bar for monthly-change context on some series, line for trends
+  const useBar = false; // can toggle per series type later
+
+  S.charts[canvasId] = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        borderColor: color,
+        backgroundColor: color + '18',
+        borderWidth: mode === 'mini' ? 1.5 : 2,
+        pointRadius: 0,
+        pointHoverRadius: mode === 'mini' ? 3 : 5,
+        fill: true,
+        tension: 0.35,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 400 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          backgroundColor: '#0f1824',
+          borderColor: '#1e2d42',
+          borderWidth: 1,
+          titleColor: '#7a9bb8',
+          bodyColor: '#dce8f5',
+          titleFont: { family: 'IBM Plex Mono', size: 9 },
+          bodyFont: { family: 'IBM Plex Mono', size: 11 },
+          callbacks: {
+            label: ctx => ' ' + (fmtFn ? fmtFn(ctx.parsed.y) : ctx.parsed.y.toFixed(2))
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false, drawBorder: false },
+          ticks: {
+            font: { family: 'IBM Plex Mono', size: 8 },
+            color: '#3a5570',
+            maxTicksLimit: mode === 'mini' ? 4 : 10,
+            maxRotation: 0,
+          },
+          border: { display: false }
+        },
+        y: {
+          grid: { color: '#1e2d4255', drawBorder: false },
+          ticks: {
+            font: { family: 'IBM Plex Mono', size: 8 },
+            color: '#3a5570',
+            maxTicksLimit: mode === 'mini' ? 3 : 6,
+            callback: v => fmtFn ? fmtFn(v) : v.toFixed(1)
+          },
+          border: { display: false }
+        }
+      }
+    }
+  });
+
+  return S.charts[canvasId];
+}
+
+// ══════════════════════════════════════════════════════════
+// MODAL — click chart to see detail table
+// ══════════════════════════════════════════════════════════
+function openModal(seriesId) {
+  const d = S.data[seriesId];
+  if (!d) return;
+
+  const { data, series, latest, prev, delta, pct, fmtd } = d;
+
+  document.getElementById('modalTitle').textContent = series.label || seriesId;
+  document.getElementById('modalSub').textContent = `FRED Series: ${seriesId} · ${series.unit || ''}`;
+  document.getElementById('ms-latest').textContent = fmtd;
+  document.getElementById('ms-latest-d').textContent = data[data.length-1].date;
+  document.getElementById('ms-prior').textContent = series.fmt(prev);
+  document.getElementById('ms-prior-d').textContent = data[data.length-2].date;
+
+  const sc = sigClass(series.sig(delta));
+  const chgEl = document.getElementById('ms-chg');
+  chgEl.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(3);
+  chgEl.style.color = sc === 'up' ? 'var(--green)' : sc === 'dn' ? 'var(--red)' : sc === 'wn' ? 'var(--amber)' : 'var(--text2)';
+
+  document.getElementById('ms-chg-d').textContent = `${pct}% vs prior`;
+
+  // 12M range
+  const vals = data.slice(-13).map(d => parseFloat(d.value));
+  const mn = Math.min(...vals), mx = Math.max(...vals);
+  document.getElementById('ms-range').textContent = series.fmt(mn) + ' – ' + series.fmt(mx);
+  document.getElementById('ms-range-d').textContent = 'Last 12 periods';
+
+  // Modal chart — more data
+  if (S.modalChart) { S.modalChart.destroy(); S.modalChart = null; }
+  const mCanvas = document.getElementById('modalChart');
+  const colorMap = { up:'#10b981', dn:'#ef4444', wn:'#f59e0b', nt:'#3b82f6' };
+  const sig = series.sig(delta);
+  const color = colorMap[sig] || '#3b82f6';
+  const mLabels = data.map(d => d.date.slice(0,7));
+  const mVals   = data.map(d => parseFloat(d.value));
+
+  S.modalChart = new Chart(mCanvas, {
+    type: 'line',
+    data: {
+      labels: mLabels,
+      datasets: [{
+        data: mVals,
+        borderColor: color,
+        backgroundColor: color + '20',
+        borderWidth: 2,
+        pointRadius: 2,
+        pointHoverRadius: 6,
+        pointBackgroundColor: color,
+        fill: true,
+        tension: 0.3,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 300 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          mode: 'index', intersect: false,
+          backgroundColor: '#0f1824', borderColor: '#1e2d42', borderWidth: 1,
+          titleColor: '#7a9bb8', bodyColor: '#dce8f5',
+          titleFont: { family:'IBM Plex Mono', size:10 },
+          bodyFont: { family:'IBM Plex Mono', size:12 },
+          callbacks: { label: ctx => ' ' + series.fmt(ctx.parsed.y) }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: '#1e2d4230' },
+          ticks: { font:{family:'IBM Plex Mono',size:9}, color:'#3a5570', maxTicksLimit:12, maxRotation:0 },
+          border: { display:false }
+        },
+        y: {
+          grid: { color: '#1e2d4255' },
+          ticks: { font:{family:'IBM Plex Mono',size:9}, color:'#3a5570', callback: v => series.fmt(v) },
+          border: { display:false }
+        }
+      }
+    }
+  });
+
+  // Table — show all data with MoM and YoY
+  const tbody = document.getElementById('modalTableBody');
+  const rows = [...data].reverse(); // newest first
+  tbody.innerHTML = rows.map((row, i) => {
+    const val = parseFloat(row.value);
+    const priorRow = rows[i+1];
+    const priorVal = priorRow ? parseFloat(priorRow.value) : null;
+    const yoyRow = rows[i+12];
+    const yoyVal = yoyRow ? parseFloat(yoyRow.value) : null;
+
+    const mom = priorVal !== null ? val - priorVal : null;
+    const momPct = priorVal !== null ? ((val-priorVal)/Math.abs(priorVal)*100) : null;
+    const yoyPct = yoyVal !== null ? ((val-yoyVal)/Math.abs(yoyVal)*100) : null;
+
+    const momCls = mom !== null ? (mom >= 0 ? 'pos' : 'neg') : '';
+    const yoyCls = yoyPct !== null ? (yoyPct >= 0 ? 'pos' : 'neg') : '';
+
+    return `<tr>
+      <td>${row.date}</td>
+      <td>${series.fmt(val)}</td>
+      <td class="${momCls}">${mom !== null ? (mom>=0?'+':'')+mom.toFixed(3) : '—'}</td>
+      <td class="${momCls}">${momPct !== null ? (momPct>=0?'+':'')+momPct.toFixed(2)+'%' : '—'}</td>
+      <td class="${yoyCls}">${yoyPct !== null ? (yoyPct>=0?'+':'')+yoyPct.toFixed(2)+'%' : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function openManualModal(key) {
+  // For manual entries, just focus the input
+  const inp = document.getElementById('inp-' + key);
+  if (inp) inp.focus();
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modalOverlay')) return;
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Keyboard close
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ══════════════════════════════════════════════════════════
+// MANUAL KPIs
+// ══════════════════════════════════════════════════════════
+function saveM(key, isPMI = false) {
+  const inp = document.getElementById('inp-' + key);
+  if (!inp || !inp.value) return;
+  const val = parseFloat(inp.value);
+  const prev = S.manual[key]?.value ?? null;
+
+  S.manual[key] = { value: val, prev, savedAt: new Date().toISOString() };
+  localStorage.setItem('kpi_manual_v2', JSON.stringify(S.manual));
+  renderManual(key, val, prev, isPMI);
+  inp.value = '';
+  inp.placeholder = '✓ Saved: ' + val;
+  setTimeout(() => { inp.placeholder = 'Enter new value'; }, 2000);
+}
+
+function renderManual(key, val, prev, isPMI) {
+  const vEl = document.getElementById('v-' + key);
+  const gEl = document.getElementById('g-' + key);
+  const sbEl = document.getElementById('sb-' + key);
+  const prevEl = document.getElementById('prev-' + key);
+
+  if (vEl) vEl.textContent = val.toFixed(1);
+
+  let sig = 'nt';
+  if (isPMI) {
+    sig = val >= 50 ? 'up' : val >= 47 ? 'wn' : 'dn';
+  } else {
+    if (prev !== null) sig = val > prev ? 'up' : val < prev ? 'dn' : 'nt';
+  }
+
+  if (gEl && prev !== null) {
+    const delta = val - prev;
+    const sc = sigClass(sig);
+    gEl.className = `cc-change ${sc}`;
+    gEl.innerHTML = `${sigArrow(delta)} ${Math.abs(delta).toFixed(1)} vs prior`;
+  }
+
+  if (sbEl) sbEl.className = `cc-sig-bar ${sigClass(sig)}`;
+  if (prevEl && prev !== null) prevEl.textContent = `prev: ${prev.toFixed(1)}`;
+}
+
+function loadManuals() {
+  Object.entries(S.manual).forEach(([key, obj]) => {
+    renderManual(key, obj.value, obj.prev, PMI_KEYS.includes(key));
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// MAIN LOAD
+// ══════════════════════════════════════════════════════════
+async function loadAll() {
+  const btn = document.getElementById('btnRef');
+  const dot = document.getElementById('liveDot');
+  const txt = document.getElementById('liveText');
+
+  btn.disabled = true;
+  btn.textContent = '↻ LOADING';
+  dot.className = 'live-dot loading';
+  txt.textContent = 'Fetching data...';
+
+  let loaded = 0;
+  const total = FRED_SERIES.length;
+
+  const promises = FRED_SERIES.map(async series => {
+    const data = await fetchFRED(series.id);
+    if (data && data.length >= 2) {
+      renderCard(series, data);
+    } else {
+      const key = series.altKey || series.id;
+      const vEl = document.getElementById('v-' + key);
+      const gEl = document.getElementById('g-' + key);
+      if (vEl) vEl.textContent = 'N/A';
+      if (gEl) { gEl.className = 'cc-change nt'; gEl.textContent = 'No data'; }
+    }
+    loaded++;
+    txt.textContent = `Loading ${loaded}/${total}`;
+  });
+
+  await Promise.all(promises);
+  loadManuals();
+
+  const now = new Date();
+  document.getElementById('hdrTime').textContent =
+    now.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' ' +
+    now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+
+  dot.className = 'live-dot';
+  txt.textContent = `${loaded} series loaded`;
+  btn.disabled = false;
+  btn.textContent = '↻ REFRESH';
+}
+
+// Init
+loadAll();
+</script>
+</body>
+</html>
+HTMLEOF
+echo "Done — $(wc -c < /home/claude/macro_dashboard.html) bytes"
