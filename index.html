@@ -110,6 +110,64 @@ body {
 }
 .geo-scroll-btn:hover { color: var(--text2); border-color: var(--border2); }
 
+/* ── VIEW BAR ── */
+.view-bar {
+  background: var(--bg3); border-bottom: 2px solid var(--border2);
+  padding: 0 24px; display: flex; gap: 0;
+}
+.view-btn {
+  background: none; border: none; border-bottom: 3px solid transparent;
+  color: var(--text3); font-family: var(--mono); font-size: 10px;
+  letter-spacing: 1.5px; text-transform: uppercase; padding: 10px 20px;
+  cursor: pointer; transition: all 0.15s; margin-bottom: -2px;
+}
+.view-btn:hover { color: var(--text2); }
+.view-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ── DATA TABLE VIEW ── */
+#view-tables { display: none; }
+#view-charts { display: block; }
+
+.dt-section { padding: 28px 24px; border-bottom: 1px solid var(--border); }
+.dt-geo-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+
+.dt-table-wrap { overflow-x: auto; margin-bottom: 28px; }
+.dt-table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 900px; }
+.dt-table thead tr:first-child th {
+  background: var(--bg3); border-bottom: 1px solid var(--border2);
+  padding: 10px 12px; font-size: 8px; letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--text3); text-align: center; font-weight: 500;
+}
+.dt-table thead tr:last-child th {
+  background: var(--bg2); border-bottom: 2px solid var(--border2);
+  padding: 6px 10px; font-size: 8px; color: var(--text3); text-align: right;
+  white-space: nowrap; letter-spacing: 0.5px;
+}
+.dt-table thead tr:last-child th:first-child { text-align: left; }
+.dt-table td {
+  padding: 8px 10px; border-bottom: 1px solid var(--border);
+  text-align: right; color: var(--text2); white-space: nowrap;
+  font-size: 10px;
+}
+.dt-table td:first-child {
+  text-align: left; color: var(--text2); font-weight: 500;
+  position: sticky; left: 0; background: var(--surface); z-index: 1;
+  border-right: 1px solid var(--border2); min-width: 180px;
+}
+.dt-table tr:hover td { background: var(--bg4); }
+.dt-table tr:hover td:first-child { background: var(--bg4); }
+.dt-cell-val { display: block; font-size: 10px; color: var(--text); }
+.dt-cell-mom { display: block; font-size: 9px; }
+.dt-cell-yoy { display: block; font-size: 9px; color: var(--text3); }
+.dt-pos { color: var(--green) !important; }
+.dt-neg { color: var(--red) !important; }
+.dt-warn { color: var(--amber) !important; }
+.dt-bucket-row td {
+  background: var(--bg3) !important; color: var(--text3) !important;
+  font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 6px 12px; border-bottom: 1px solid var(--border2);
+}
+
 /* ── PAGE ── */
 .page { padding: 0; max-width: 1700px; }
 
@@ -144,9 +202,9 @@ body {
 }
 
 /* ── CHART GRIDS ── */
-.cg2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 12px; }
-.cg3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 12px; }
-.cg4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 12px; }
+.cg2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; margin-bottom: 16px; }
+.cg3 { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; margin-bottom: 16px; }
+.cg4 { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; margin-bottom: 16px; }
 
 /* ── CHART CARD ── */
 .cc {
@@ -194,8 +252,8 @@ body {
   color: var(--text3); font-size: 7px; letter-spacing: 0.8px; padding: 1px 5px; margin-top: 4px;
 }
 
-.cc-chart { position: relative; height: 120px; }
-.cc-chart-tall { position: relative; height: 160px; }
+.cc-chart { position: relative; height: 350px; }
+.cc-chart-tall { position: relative; height: 350px; }
 
 .cc-expand {
   position: absolute; top: 8px; right: 8px;
@@ -365,7 +423,11 @@ body {
 <!-- ══════════════════════════════════════════════════════ -->
 <!-- PAGE CONTENT -->
 <!-- ══════════════════════════════════════════════════════ -->
-<div class="page">
+<div class="view-bar">
+  <button class="view-btn active" id="vbtn-charts" onclick="switchView('charts')">📈 Charts</button>
+  <button class="view-btn" id="vbtn-tables" onclick="switchView('tables')">📋 Data Tables</button>
+</div>
+<div id="view-charts"><div class="page">
 
 <!-- ────────────────────────────────────────────────────── -->
 <!-- 🇺🇸 UNITED STATES -->
@@ -383,20 +445,20 @@ body {
   <div class="bucket-head"><div class="bucket-label">Activity & Output</div><div class="bucket-line"></div><div class="bucket-count">7 series</div></div>
   <div class="cg4">
     <div class="cc usa-card" onclick="openModal('INDPRO')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Industrial Production</div><div class="cc-value" id="v-INDPRO">—</div><div class="cc-change nt" id="g-INDPRO"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · INDPRO<br>Monthly · Index</div></div></div><div class="cc-chart"><canvas id="c-INDPRO"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-INDPRO"></div></div>
-    <div class="cc usa-card" onclick="openModal('TCU')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Capacity Utilization</div><div class="cc-value" id="v-TCU">—</div><div class="cc-change nt" id="g-TCU"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · TCU<br>Monthly · %</div></div></div><div class="cc-chart"><canvas id="c-TCU"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-TCU"></div></div>
+    <div class="cc usa-card" onclick="openModal('CAPUTLB50001SQ')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Capacity Utilization</div><div class="cc-value" id="v-TCU">—</div><div class="cc-change nt" id="g-TCU"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · CAPUTLB50001SQ<br>Monthly · %</div></div></div><div class="cc-chart"><canvas id="c-TCU"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-TCU"></div></div>
     <div class="cc usa-card" onclick="openModal('IPMAN')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Manufacturing Output</div><div class="cc-value" id="v-IPMAN">—</div><div class="cc-change nt" id="g-IPMAN"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · IPMAN<br>Monthly · Index</div></div></div><div class="cc-chart"><canvas id="c-IPMAN"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-IPMAN"></div></div>
     <div class="cc usa-card" onclick="openModal('GDPC1')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Real GDP</div><div class="cc-value" id="v-GDPC1">—</div><div class="cc-change nt" id="g-GDPC1"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · GDPC1<br>Quarterly · $B</div></div></div><div class="cc-chart"><canvas id="c-GDPC1"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-GDPC1"></div></div>
     <div class="cc usa-card" onclick="openModal('ADXTNO')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Durable Goods (ex-def, ex-air)</div><div class="cc-value" id="v-ADXTNO">—</div><div class="cc-change nt" id="g-ADXTNO"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · ADXTNO<br>Monthly · $M</div></div></div><div class="cc-chart"><canvas id="c-ADXTNO"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-ADXTNO"></div></div>
-    <div class="cc usa-card" onclick="openModal('AMTMNO')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Factory Orders</div><div class="cc-value" id="v-AMTMNO">—</div><div class="cc-change nt" id="g-AMTMNO"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · AMTMNO<br>Monthly · $M</div></div></div><div class="cc-chart"><canvas id="c-AMTMNO"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-AMTMNO"></div></div>
+    <div class="cc usa-card" onclick="openModal('MNFCTRNO')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Factory Orders</div><div class="cc-value" id="v-AMTMNO">—</div><div class="cc-change nt" id="g-AMTMNO"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · MNFCTRNO<br>Monthly · $M</div></div></div><div class="cc-chart"><canvas id="c-AMTMNO"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-AMTMNO"></div></div>
     <div class="cc usa-card" onclick="openModal('RSXFS')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Retail Sales (ex-autos)</div><div class="cc-value" id="v-RSXFS">—</div><div class="cc-change nt" id="g-RSXFS"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · RSXFS<br>Monthly · $M</div></div></div><div class="cc-chart"><canvas id="c-RSXFS"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-RSXFS"></div></div>
   </div>
 
   <!-- Labor Market -->
   <div class="bucket-head"><div class="bucket-label">Labor Market</div><div class="bucket-line"></div><div class="bucket-count">4 series</div></div>
   <div class="cg4">
-    <div class="cc usa-card" onclick="openModal('MANEMP')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Mfg Employment (000s)</div><div class="cc-value" id="v-MANEMP">—</div><div class="cc-change nt" id="g-MANEMP"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · MANEMP<br>Monthly · 000s</div></div></div><div class="cc-chart"><canvas id="c-MANEMP"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-MANEMP"></div></div>
+    <div class="cc usa-card" onclick="openModal('CEU3000000001')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Mfg Employment (000s)</div><div class="cc-value" id="v-MANEMP">—</div><div class="cc-change nt" id="g-MANEMP"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · CEU3000000001<br>Monthly · 000s</div></div></div><div class="cc-chart"><canvas id="c-MANEMP"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-MANEMP"></div></div>
     <div class="cc usa-card" onclick="openModal('AWHMAN')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Mfg Avg Weekly Hours</div><div class="cc-value" id="v-AWHMAN">—</div><div class="cc-change nt" id="g-AWHMAN"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · AWHMAN<br>Monthly · hrs</div></div></div><div class="cc-chart"><canvas id="c-AWHMAN"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-AWHMAN"></div></div>
-    <div class="cc usa-card" onclick="openModal('JTSJOL')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Job Openings: Mfg (000s)</div><div class="cc-value" id="v-JTSJOL">—</div><div class="cc-change nt" id="g-JTSJOL"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · JTSJOL<br>Monthly · 000s</div></div></div><div class="cc-chart"><canvas id="c-JTSJOL"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-JTSJOL"></div></div>
+    <div class="cc usa-card" onclick="openModal('JTUJOL')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Job Openings: Mfg (000s)</div><div class="cc-value" id="v-JTSJOL">—</div><div class="cc-change nt" id="g-JTSJOL"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · JTUJOL<br>Monthly · 000s</div></div></div><div class="cc-chart"><canvas id="c-JTSJOL"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-JTSJOL"></div></div>
     <div class="cc usa-card" onclick="openModal('ICSA')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Initial Jobless Claims</div><div class="cc-value" id="v-ICSA">—</div><div class="cc-change nt" id="g-ICSA"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · ICSA<br>Weekly · 000s</div></div></div><div class="cc-chart"><canvas id="c-ICSA"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-ICSA"></div></div>
   </div>
 
@@ -416,7 +478,7 @@ body {
     <div class="cc usa-card manual" onclick="openManualModal('ism-orders')"><div class="cc-top"><div class="cc-left"><div class="cc-label">ISM New Orders Sub-Index</div><div class="cc-value" id="v-ism-orders">—</div><div class="cc-change nt" id="g-ism-orders">Manual entry</div></div><div class="cc-right"><div class="cc-src">ISM · Monthly<br>50 = Expansion</div><div class="cc-manual-badge">⚑ MANUAL</div></div></div><div class="cc-manual-input"><input class="m-input" id="inp-ism-orders" type="number" placeholder="e.g. 51.4" step="0.1"><button class="m-save" onclick="event.stopPropagation();saveM('ism-orders',true)">SAVE</button><span class="m-prev" id="prev-ism-orders"></span></div><div class="cc-sig-bar nt" id="sb-ism-orders"></div></div>
     <div class="cc usa-card" onclick="openModal('USSLIND')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Conference Board LEI</div><div class="cc-value" id="v-USSLIND">—</div><div class="cc-change nt" id="g-USSLIND"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · USSLIND<br>Monthly</div></div></div><div class="cc-chart"><canvas id="c-USSLIND"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-USSLIND"></div></div>
     <div class="cc usa-card" onclick="openModal('CSCICP03USM665S')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Consumer Confidence</div><div class="cc-value" id="v-CSCICP03USM665S">—</div><div class="cc-change nt" id="g-CSCICP03USM665S"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · CSCICP03USM665S<br>Monthly</div></div></div><div class="cc-chart"><canvas id="c-CSCICP03USM665S"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-CSCICP03USM665S"></div></div>
-    <div class="cc usa-card" onclick="openModal('PHILLYFED')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Philly Fed Mfg Index</div><div class="cc-value" id="v-PHILLYFED">—</div><div class="cc-change nt" id="g-PHILLYFED"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · MPMJPMA<br>Monthly · Diffusion</div></div></div><div class="cc-chart"><canvas id="c-PHILLYFED"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-PHILLYFED"></div></div>
+    <div class="cc usa-card" onclick="openModal('PHILLYFED')"><div class="cc-top"><div class="cc-left"><div class="cc-label">Philly Fed Mfg Index</div><div class="cc-value" id="v-PHILLYFED">—</div><div class="cc-change nt" id="g-PHILLYFED"><span class="spin"></span></div></div><div class="cc-right"><div class="cc-src">FRED · GASPHLXNBSFRBPHI<br>Monthly · Diffusion</div></div></div><div class="cc-chart"><canvas id="c-PHILLYFED"></canvas></div><div class="cc-expand">EXPAND ↗</div><div class="cc-sig-bar nt" id="sb-PHILLYFED"></div></div>
   </div>
 
   <!-- Inventory Cycle -->
@@ -502,6 +564,7 @@ body {
 </div>
 
 </div><!-- end .page -->
+</div><!-- end #view-charts -->
 
 <script>
 // ══════════════════════════════════════════════════════════
@@ -513,16 +576,16 @@ const FRED_KEY = '158a42813f5a5d73b9acf45c2dad5dec';
 const FRED_SERIES = [
   // USA Activity
   { id:'INDPRO',    fmt: v=>v.toFixed(1),      unit:'idx',    sig: d=>d>0?'up':'dn', label:'Industrial Production' },
-  { id:'TCU',       fmt: v=>v.toFixed(1)+'%',  unit:'%',      sig: d=>d>0?'up':'dn', label:'Capacity Utilization' },
+  { id:'CAPUTLB50001SQ', altKey:'TCU', fmt: v=>v.toFixed(1)+'%', unit:'%', sig: d=>d>0?'up':'dn', label:'Capacity Utilization' },
   { id:'IPMAN',     fmt: v=>v.toFixed(1),       unit:'idx',    sig: d=>d>0?'up':'dn', label:'Mfg Output' },
   { id:'GDPC1',     fmt: v=>'$'+v.toFixed(0),   unit:'$B',     sig: d=>d>0?'up':'dn', label:'Real GDP' },
   { id:'ADXTNO',    fmt: v=>'$'+v.toFixed(0),   unit:'$M',     sig: d=>d>0?'up':'dn', label:'Durable Goods' },
-  { id:'AMTMNO',    fmt: v=>'$'+v.toFixed(0),   unit:'$M',     sig: d=>d>0?'up':'dn', label:'Factory Orders' },
+  { id:'MNFCTRNO', altKey:'AMTMNO',   fmt: v=>'$'+v.toFixed(0),   unit:'$M',     sig: d=>d>0?'up':'dn', label:'Factory Orders' },
   { id:'RSXFS',     fmt: v=>'$'+v.toFixed(0),   unit:'$M',     sig: d=>d>0?'up':'dn', label:'Retail Sales ex-Auto' },
   // USA Labor
-  { id:'MANEMP',    fmt: v=>v.toFixed(0),        unit:'000s',  sig: d=>d>0?'up':'dn', label:'Mfg Employment' },
+  { id:'CEU3000000001', altKey:'MANEMP', fmt: v=>v.toFixed(0),      unit:'000s',  sig: d=>d>0?'up':'dn', label:'Mfg Employment' },
   { id:'AWHMAN',    fmt: v=>v.toFixed(1),         unit:'hrs',   sig: d=>d>0?'up':'dn', label:'Avg Weekly Hours' },
-  { id:'JTSJOL',    fmt: v=>v.toFixed(0),          unit:'000s', sig: d=>d>0?'up':'dn', label:'Mfg Job Openings' },
+  { id:'JTUJOL', altKey:'JTSJOL',    fmt: v=>v.toFixed(0),      unit:'000s', sig: d=>d>0?'up':'dn', label:'Job Openings' },
   { id:'ICSA',      fmt: v=>v.toFixed(0),          unit:'000s', sig: d=>d<0?'up':'dn', label:'Initial Claims' },
   // USA Prices
   { id:'PPIFIS',    fmt: v=>v.toFixed(1),       unit:'idx',    sig: d=>d<0?'up':d>0.5?'wn':'nt', label:'PPI Final Demand' },
@@ -532,7 +595,7 @@ const FRED_SERIES = [
   // USA Surveys
   { id:'USSLIND',   fmt: v=>v.toFixed(1),        unit:'idx',   sig: d=>d>0?'up':'dn', label:'CB LEI' },
   { id:'CSCICP03USM665S', fmt: v=>v.toFixed(1), unit:'idx',   sig: d=>d>0?'up':'dn', label:'Consumer Confidence' },
-  { id:'MPMJPMA',   fmt: v=>v.toFixed(1),        unit:'idx',   sig: d=>d>0?'up':'dn', label:'Philly Fed', altKey:'PHILLYFED' },
+  { id:'GASPHLXNBSFRBPHI', altKey:'PHILLYFED',  fmt: v=>v.toFixed(1),   unit:'idx',   sig: d=>d>0?'up':'dn', label:'Philly Fed' },
   // USA Inventory
   { id:'BUSINV',    fmt: v=>'$'+v.toFixed(0),   unit:'$M',     sig: d=>d<0?'up':'wn', label:'Business Inventories' },
   { id:'ISRATIO',   fmt: v=>v.toFixed(2),        unit:'ratio', sig: d=>d<0?'up':'wn', label:'Inventory/Sales Ratio' },
@@ -580,7 +643,7 @@ function scrollGeo(geo, btn) {
 // ══════════════════════════════════════════════════════════
 // FRED DATA FETCH
 // ══════════════════════════════════════════════════════════
-async function fetchFRED(seriesId, limit = 26) {
+async function fetchFRED(seriesId, limit = 130) {
   const fredUrl = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${FRED_KEY}&file_type=json&sort_order=desc&limit=${limit}`;
   const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(fredUrl)}`;
   try {
@@ -600,6 +663,18 @@ function sigClass(sig) {
 
 function sigArrow(delta) { return delta >= 0 ? '▲' : '▼'; }
 
+function fmtNum(v) {
+  // Add commas to large numbers
+  if (typeof v !== 'string') return v;
+  return v.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function applyFmt(series, val) {
+  const raw = series.fmt(val);
+  // Apply comma formatting to numeric portions
+  return raw.replace(/(\d{4,})/g, m => parseInt(m).toLocaleString());
+}
+
 function renderCard(series, data) {
   const key = series.altKey || series.id;
   const latest = parseFloat(data[data.length - 1].value);
@@ -609,7 +684,7 @@ function renderCard(series, data) {
   const sig    = series.sig(delta);
   const sc     = sigClass(sig);
   const arrow  = sigArrow(delta);
-  const fmtd   = series.fmt(latest);
+  const fmtd   = applyFmt(series, latest);
 
   // Update card values
   const vEl = document.getElementById('v-' + key);
@@ -647,23 +722,74 @@ function buildChart(canvasId, data, fmtFn, sig, mode = 'mini') {
   const labels = data.map(d => d.date.slice(0, 7));
   const values = data.map(d => parseFloat(d.value));
 
-  // Use bar for monthly-change context on some series, line for trends
-  const useBar = false; // can toggle per series type later
+  // 10-year average
+  const avg = values.reduce((a,b) => a+b, 0) / values.length;
+  const avgData = values.map(() => avg);
+
+  // YTD % change annotation — last value vs first value of current year
+  const currentYear = new Date().getFullYear().toString();
+  const ytdStartIdx = data.findIndex(d => d.date.startsWith(currentYear));
+  const ytdStart = ytdStartIdx >= 0 ? parseFloat(data[ytdStartIdx].value) : null;
+  const ytdLatest = values[values.length - 1];
+  const ytdPct = ytdStart ? ((ytdLatest - ytdStart) / Math.abs(ytdStart) * 100) : null;
+
+  // Fmt helper with commas
+  const fmtTick = v => {
+    if (!fmtFn) return v.toFixed(1);
+    const raw = fmtFn(v);
+    return raw.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  // Annotation plugin (inline, no external lib needed)
+  const ytdPlugin = {
+    id: 'ytdLabel',
+    afterDatasetsDraw(chart) {
+      if (!ytdPct) return;
+      const ctx2 = chart.ctx;
+      const meta = chart.getDatasetMeta(0);
+      if (!meta.data.length) return;
+      const last = meta.data[meta.data.length - 1];
+      const pctStr = (ytdPct >= 0 ? '+' : '') + ytdPct.toFixed(1) + '% YTD';
+      ctx2.save();
+      ctx2.font = '500 9px IBM Plex Mono';
+      ctx2.fillStyle = ytdPct >= 0 ? '#10b981' : '#ef4444';
+      ctx2.textAlign = 'right';
+      ctx2.fillText(pctStr, chart.width - 8, last.y - 6);
+      ctx2.restore();
+    }
+  };
 
   S.charts[canvasId] = new Chart(canvas, {
     type: 'line',
+    plugins: [ytdPlugin],
     data: {
       labels,
-      datasets: [{
-        data: values,
-        borderColor: color,
-        backgroundColor: color + '18',
-        borderWidth: mode === 'mini' ? 1.5 : 2,
-        pointRadius: 0,
-        pointHoverRadius: mode === 'mini' ? 3 : 5,
-        fill: true,
-        tension: 0.35,
-      }]
+      datasets: [
+        {
+          data: values,
+          borderColor: color,
+          backgroundColor: color + '15',
+          borderWidth: mode === 'mini' ? 1.5 : 2,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          fill: true,
+          tension: 0.3,
+          order: 1,
+        },
+        {
+          // 10-year average reference line
+          data: avgData,
+          borderColor: '#3a557088',
+          borderWidth: 1,
+          borderDash: [4, 4],
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          fill: false,
+          tension: 0,
+          order: 2,
+          label: '10yr avg',
+        }
+      ]
     },
     options: {
       responsive: true,
@@ -674,6 +800,7 @@ function buildChart(canvasId, data, fmtFn, sig, mode = 'mini') {
         tooltip: {
           mode: 'index',
           intersect: false,
+          filter: item => item.datasetIndex === 0,
           backgroundColor: '#0f1824',
           borderColor: '#1e2d42',
           borderWidth: 1,
@@ -682,7 +809,14 @@ function buildChart(canvasId, data, fmtFn, sig, mode = 'mini') {
           titleFont: { family: 'IBM Plex Mono', size: 9 },
           bodyFont: { family: 'IBM Plex Mono', size: 11 },
           callbacks: {
-            label: ctx => ' ' + (fmtFn ? fmtFn(ctx.parsed.y) : ctx.parsed.y.toFixed(2))
+            label: ctx => {
+              const raw = fmtFn ? fmtFn(ctx.parsed.y) : ctx.parsed.y.toFixed(2);
+              return ' ' + raw.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            },
+            afterLabel: ctx => {
+              if (ctx.datasetIndex !== 0) return;
+              return '  10yr avg: ' + fmtTick(avg);
+            }
           }
         }
       },
@@ -692,18 +826,18 @@ function buildChart(canvasId, data, fmtFn, sig, mode = 'mini') {
           ticks: {
             font: { family: 'IBM Plex Mono', size: 8 },
             color: '#3a5570',
-            maxTicksLimit: mode === 'mini' ? 4 : 10,
+            maxTicksLimit: mode === 'mini' ? 5 : 12,
             maxRotation: 0,
           },
           border: { display: false }
         },
         y: {
-          grid: { color: '#1e2d4255', drawBorder: false },
+          grid: { color: '#1e2d4230', drawBorder: false },
           ticks: {
-            font: { family: 'IBM Plex Mono', size: 8 },
-            color: '#3a5570',
-            maxTicksLimit: mode === 'mini' ? 3 : 6,
-            callback: v => fmtFn ? fmtFn(v) : v.toFixed(1)
+            font: { family: 'IBM Plex Mono', size: 9 },
+            color: '#4a6580',
+            maxTicksLimit: mode === 'mini' ? 4 : 7,
+            callback: v => fmtTick(v)
           },
           border: { display: false }
         }
@@ -817,7 +951,7 @@ function openModal(seriesId) {
 
     return `<tr>
       <td>${row.date}</td>
-      <td>${series.fmt(val)}</td>
+      <td>${applyFmt(series, val)}</td>
       <td class="${momCls}">${mom !== null ? (mom>=0?'+':'')+mom.toFixed(3) : '—'}</td>
       <td class="${momCls}">${momPct !== null ? (momPct>=0?'+':'')+momPct.toFixed(2)+'%' : '—'}</td>
       <td class="${yoyCls}">${yoyPct !== null ? (yoyPct>=0?'+':'')+yoyPct.toFixed(2)+'%' : '—'}</td>
@@ -940,6 +1074,188 @@ async function loadAll() {
 // Init
 loadAll();
 </script>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- DATA TABLES VIEW                               -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="view-tables" style="display:none;">
+
+  <!-- USA -->
+  <div class="dt-section">
+    <div class="dt-geo-header">
+      <div class="geo-accent-bar usa"></div>
+      <div><div class="geo-name">United States</div><div class="geo-sub">Last 12 months · MoM change · YoY change</div></div>
+    </div>
+    <div class="dt-table-wrap"><div id="dt-usa"></div></div>
+  </div>
+
+  <!-- EUROPE -->
+  <div class="dt-section">
+    <div class="dt-geo-header">
+      <div class="geo-accent-bar eu"></div>
+      <div><div class="geo-name">Europe</div><div class="geo-sub">Last 12 months · MoM change · YoY change</div></div>
+    </div>
+    <div class="dt-table-wrap"><div id="dt-eu"></div></div>
+  </div>
+
+  <!-- CHINA -->
+  <div class="dt-section">
+    <div class="dt-geo-header">
+      <div class="geo-accent-bar cn"></div>
+      <div><div class="geo-name">China</div><div class="geo-sub">Last 12 months · MoM change · YoY change</div></div>
+    </div>
+    <div class="dt-table-wrap"><div id="dt-cn"></div></div>
+  </div>
+
+</div>
+
+<script>
+// ════════════════════════════════════════
+// VIEW SWITCHER
+// ════════════════════════════════════════
+function switchView(v) {
+  document.getElementById('view-charts').style.display = v === 'charts' ? 'block' : 'none';
+  document.getElementById('view-tables').style.display = v === 'tables' ? 'block' : 'none';
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('vbtn-' + v).classList.add('active');
+  if (v === 'tables') buildAllTables();
+}
+
+// ════════════════════════════════════════
+// DATA TABLE BUILDER
+// ════════════════════════════════════════
+const TABLE_GROUPS = {
+  usa: [
+    { label: 'Activity & Output', ids: ['INDPRO','CAPUTLB50001SQ','IPMAN','GDPC1','ADXTNO','MNFCTRNO','RSXFS'] },
+    { label: 'Labor Market',      ids: ['CEU3000000001','AWHMAN','JTUJOL','ICSA'] },
+    { label: 'Prices',            ids: ['PPIFIS','PPIIDC','IR','CPIAUCSL'] },
+    { label: 'Surveys',           ids: ['USSLIND','CSCICP03USM665S','GASPHLXNBSFRBPHI'] },
+    { label: 'Inventory Cycle',   ids: ['BUSINV','ISRATIO','MCUMFN'] },
+  ],
+  eu: [
+    { label: 'Eurozone Activity', ids: ['XTIMVA01EZM661S','CLVMNACSCAB1GQEA19','ECBDFR'] },
+    { label: 'Consumer & Labor',  ids: ['CSCICP03EZM665S','LRHUTTTTEZM156S','PIEAMP02EZM661N','DEXUSEU'] },
+    { label: 'Germany',           ids: ['GKIOG02DEQ661S','CLVMNACSCAB1GQDE'] },
+  ],
+  cn: [
+    { label: 'Trade & FX',        ids: ['DEXCHUS','XTEXVA01CNM664S','XTIMVA01CNM664S'] },
+  ]
+};
+
+function fmtComma(v) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  const abs = Math.abs(v);
+  if (abs >= 1000) return v.toLocaleString('en-US', {maximumFractionDigits: 0});
+  if (abs >= 10)   return v.toLocaleString('en-US', {maximumFractionDigits: 1});
+  return v.toLocaleString('en-US', {maximumFractionDigits: 3});
+}
+
+function fmtPct(v) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  return (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
+}
+
+function buildAllTables() {
+  ['usa','eu','cn'].forEach(geo => buildGeoTable(geo));
+}
+
+function buildGeoTable(geo) {
+  const container = document.getElementById('dt-' + geo);
+  if (!container) return;
+  const groups = TABLE_GROUPS[geo];
+  if (!groups) return;
+
+  // Collect all series in this geo
+  const allIds = groups.flatMap(g => g.ids);
+
+  // Find the 12 most recent dates across all series
+  let allDates = new Set();
+  allIds.forEach(id => {
+    const d = S.data[id];
+    if (d) d.data.slice(-13).forEach(row => allDates.add(row.date));
+  });
+
+  // Sort dates descending, take 12
+  const sortedDates = [...allDates].sort((a,b) => b.localeCompare(a)).slice(0,12);
+  const displayDates = [...sortedDates].reverse(); // oldest to newest for columns
+
+  // Build header
+  const monthLabels = displayDates.map(d => {
+    const dt = new Date(d + '-02');
+    return dt.toLocaleDateString('en-US', {month:'short', year:'2-digit'});
+  });
+
+  let html = `<table class="dt-table">
+  <thead>
+    <tr>
+      <th rowspan="2" style="text-align:left;vertical-align:bottom;">Series</th>
+      ${monthLabels.map(m => `<th colspan="2">${m}</th>`).join('')}
+    </tr>
+    <tr>
+      ${monthLabels.map(() => '<th>Value</th><th>MoM%</th>').join('')}
+    </tr>
+  </thead>
+  <tbody>`;
+
+  groups.forEach(group => {
+    // Bucket separator row
+    html += `<tr class="dt-bucket-row"><td colspan="${1 + displayDates.length * 2}">${group.label}</td></tr>`;
+
+    group.ids.forEach(id => {
+      const d = S.data[id];
+      const series = d?.series;
+      const label = series?.label || id;
+
+      html += `<tr><td>${label}</td>`;
+
+      displayDates.forEach((date, colIdx) => {
+        if (!d) { html += '<td>—</td><td>—</td>'; return; }
+
+        // Find this date's value
+        const row = d.data.find(r => r.date === date || r.date.startsWith(date.slice(0,7)));
+        if (!row) { html += '<td>—</td><td>—</td>'; return; }
+
+        const val = parseFloat(row.value);
+
+        // Prior period (previous entry in data)
+        const rowIdx = d.data.indexOf(row);
+        const priorRow = rowIdx > 0 ? d.data[rowIdx - 1] : null;
+        const priorVal = priorRow ? parseFloat(priorRow.value) : null;
+
+        // YoY (12 periods ago)
+        const yoyRow = rowIdx >= 12 ? d.data[rowIdx - 12] : null;
+        const yoyVal = yoyRow ? parseFloat(yoyRow.value) : null;
+
+        const momPct = priorVal !== null ? ((val - priorVal) / Math.abs(priorVal) * 100) : null;
+        const yoyPct = yoyVal !== null ? ((val - yoyVal) / Math.abs(yoyVal) * 100) : null;
+
+        const fmtVal = fmtComma(val);
+        const momStr = momPct !== null ? fmtPct(momPct) : '—';
+        const yoyStr = yoyPct !== null ? fmtPct(yoyPct) : '—';
+
+        const momCls = momPct === null ? '' : momPct > 0 ? 'dt-pos' : momPct < 0 ? 'dt-neg' : '';
+        const yoyCls = yoyPct === null ? '' : yoyPct > 0 ? 'dt-pos' : yoyPct < 0 ? 'dt-neg' : '';
+
+        // Last column: show YoY in the second sub-column
+        const isLastCol = colIdx === displayDates.length - 1;
+
+        html += `<td>
+          <span class="dt-cell-val">${fmtVal}</span>
+          <span class="dt-cell-mom ${momCls}">${momStr} MoM</span>
+          ${isLastCol ? `<span class="dt-cell-yoy ${yoyCls}">${yoyStr} YoY</span>` : ''}
+        </td>
+        <td class="${momCls}" style="font-size:10px;">${momStr}</td>`;
+      });
+
+      html += '</tr>';
+    });
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+</script>
+
 </body>
 </html>
 HTMLEOF
